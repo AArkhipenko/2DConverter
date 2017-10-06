@@ -7,7 +7,6 @@ namespace Gorelovskiy.ru_3._0_Console
 {
     class MainProgram
     {
-        //Hello world
         static void Main(string[] args)
         {
             BasicFunction o_BasicFunction = new BasicFunction();

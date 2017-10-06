@@ -35,7 +35,7 @@ namespace Gorelovskiy.ru_3._0_Console
         //*******************************************
 
         //_____________________________________________________________________________________________
-        //____________________________________чтение скана и разбиение дуги____________________________ <<<<<<
+        //____________________________________чтение скана и разбиение дуги____________________________
         //_____________________________________________________________________________________________
         public void ReadScanAndDividing()
         {
@@ -274,8 +274,14 @@ namespace Gorelovskiy.ru_3._0_Console
                 //________________________________________________________________________________________________________
                 foreach (Match M in Regex.Matches(line2D[mmm], patternM))
                 {
+                   
                     string M1 = Convert.ToString(M);
-                    //проверяем на конец работы инструмента
+
+                    if (M1 == "M30")
+                    {
+                        int abcd = 0;
+                    }
+                        //проверяем на конец работы инструмента
                     if (M1 == "M5" || M1 == "M05")
                     {
                         //если mmm это последняя строка тогда заканчиваем считывание
@@ -284,7 +290,7 @@ namespace Gorelovskiy.ru_3._0_Console
                             //сследуем стледущющую строку на предмет нахождения М6
                             Match M6 = Regex.Match(line2D[mmm + 1], patternM);
                             //если не нашли, заканчиваем работу
-                            if (M6 == null)
+                            if (M6 == null || line2D[mmm + 1] == "M30")
                                 goto endRead;
                             else
                             {
@@ -313,8 +319,6 @@ namespace Gorelovskiy.ru_3._0_Console
                     string T1 = Convert.ToString(T);
                     T1 = T1.Substring(1);
                     float T2 = Convert.ToSingle(T1);
-                    FlagIndicatorOfFirstMoves = false;
-                    line2D[mmm + 2] = "0";
 
                     DlinaSpindelPlusDlinaFrezi = allInstruments[(int)T2 - 1];
 

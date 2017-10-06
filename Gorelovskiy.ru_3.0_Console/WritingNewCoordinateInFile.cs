@@ -30,15 +30,13 @@ namespace Gorelovskiy.ru_3._0_Console
         {
             StreamForWrite3DCoordinates.WriteLine("(  GORELOVSKIY.RU  )\r\n\r\n");
             StreamForWrite3DCoordinates.WriteLine("(DzRotory = {0})\r\n\r\n", DlinaShpindel); //здесь была высота фрезы
-            StreamForWrite3DCoordinates.WriteLine("(Нижняя точка: Z=0   при   Y={0})\r\n", yPriMinZ);
-            StreamForWrite3DCoordinates.WriteLine("(Максимальная точка y={0} z={1})", MaxY, MaxZ);
-            StreamForWrite3DCoordinates.WriteLine(" \r\n\r\n");
-            StreamForWrite3DCoordinates.WriteLine("(Координаты точки начала сканирования фасада:)" + "\r\n" + "(Y={0} Z={1})", Math.Round(centrY, 2), Math.Round(centrZ, 2));
+            StreamForWrite3DCoordinates.WriteLine("(Нижняя точка: Z=0   при   X={0})\r\n", yPriMinZ);
+            StreamForWrite3DCoordinates.WriteLine("(Максимальная точка Z={1}  при X={0} )", MaxY, MaxZ);
+            StreamForWrite3DCoordinates.WriteLine("(Координаты точки начала сканирования фасада:)" + "\r\n" + "(Z={1} при X={0} )", Math.Round(centrY, 2), Math.Round(centrZ, 2));
             StreamForWrite3DCoordinates.WriteLine(" \r\n\r\n");
             StreamForWrite3DCoordinates.WriteLine("G43");
             StreamForWrite3DCoordinates.WriteLine("G0    Z{0}    A0", MaxZ + 20);
-            StreamForWrite3DCoordinates.WriteLine("G0    Y-50    ");
-            StreamForWrite3DCoordinates.WriteLine("G0    X{0}    ", HordaFasada / 2);
+
         }
 
         //___________________________________________________________________________
@@ -47,7 +45,7 @@ namespace Gorelovskiy.ru_3._0_Console
         //___________________________________________________________________________
         public void EndStrings()
         {
-            StreamForWrite3DCoordinates.WriteLine("M05" + "\r\n" + "G53 G0 Z-50" + "\r\n" + "A0" + "\r\n" + "M30");
+            StreamForWrite3DCoordinates.WriteLine("M05" + "\r\n" + "G53 G0 Z0" + "\r\n" + "G0 A0" + "\r\n" + "M30");
         }
 
         //___________________________________________________________________________
