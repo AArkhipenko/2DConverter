@@ -277,10 +277,6 @@ namespace Gorelovskiy.ru_3._0_Console
                    
                     string M1 = Convert.ToString(M);
 
-                    if (M1 == "M30")
-                    {
-                        int abcd = 0;
-                    }
                         //проверяем на конец работы инструмента
                     if (M1 == "M5" || M1 == "M05")
                     {
@@ -321,6 +317,8 @@ namespace Gorelovskiy.ru_3._0_Console
                     float T2 = Convert.ToSingle(T1);
 
                     DlinaSpindelPlusDlinaFrezi = allInstruments[(int)T2 - 1];
+
+                    FlagIndicatorOfFirstMoves = false;
 
                     Write3DCoordinate.WriteT(T2);
                 }
