@@ -4,39 +4,39 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Linq;
 
+
 namespace Gorelovskiy.ru_3._0_Console
 {
     class BasicFunction
     {
-
         //*******************************************
 
         //Глобальные переменные:
         //1)используются другими классами
+        public enum customers : int { VerlinRostov = 1, DiakovRostov, ArmenOtradnoe, ArmenGeorgevsk }//список заказчиков
+        public static int customer = (int)customers.DiakovRostov; //для какого типчика прога
         public static float[, ,] newduga;
         public static float DlinaSpindelPlusDlinaFrezi;
         public static float[] allInstruments;
         public static int KolichestvoProhodov;
         public static float ShagSkanaVdol;
-        //2) не используются другими классами но используются в этом классе в нескольких функциях
-        private string[] line2D;
-        float centrY, centrZ;
-        float HordaFasada;
-        float MaxY, MaxZ;// высшие координаты по игрек и зет
-        float yPriMinZ, MinZ;//низшая точка по зет
 
-        // глобальный поток для записи в файл нового текста g-code
-
-        //глобальные объекты функций
         public static AddictionalFunctionsClass.Exceptions oBF_Exception = new AddictionalFunctionsClass.Exceptions();
         public static WritingNewCoordinateInFile Write3DCoordinate;
         public static WorkWithRead2DCoordinates WorkWithMoves;
-
-        //*******************************************
+        //2) не используются другими классами но используются в этом классе в нескольких функциях
+        private string[] line2D;
+        private float centrY, centrZ;
+        private float HordaFasada;
+        private float MaxY, MaxZ;// высшие координаты по игрек и зет
+        private float yPriMinZ, MinZ;//низшая точка по зет
 
         //_____________________________________________________________________________________________
         //____________________________________чтение скана и разбиение дуги____________________________
         //_____________________________________________________________________________________________
+        /// <summary>
+        /// Метод чтение скана из файла и интерполяция его до глдакой поверхности.
+        /// </summary>
         public void ReadScanAndDividing()
         {
             string[] line = File.ReadAllLines(@"C:\Mach3\GCode\1Scan.txt");//создаем массив типа стринг, в который записываем по строчно информацию содержащеюся в duga (фактически читаем файл построчно)
@@ -177,12 +177,28 @@ namespace Gorelovskiy.ru_3._0_Console
         //____________________________________________________________________________________
         //__________________________________чтение координат двухмерного рисунка______________
         //____________________________________________________________________________________
+        /// <summary>
+        /// Метод чтения двухмерного рисунка в массив. Имеется два варианта: <para/>
+        /// 1)Для рисунка без автоматической смены инструмента <para/>
+        /// 2)Для рисунка с автоматической сменой инструмента (с Т*)
+        /// </summary>
         public void Read2DPicture()
         {
-            string[] info = File.ReadAllLines(@"C:\Mach3\GCode\1_info.dat", Encoding.GetEncoding(1251));
+            string[] addres;
+            if (customer == (int)customers.ArmenOtradnoe ||
+                customer == (int)customers.VerlinRostov ||
+                customer == (int)customers.DiakovRostov)
+            {
+                addres = File.ReadAllLines(@"C:\Mach3\GCode\addresGCode.txt", Encoding.GetEncoding(1251));
+            }
+            else //в файле лежат адрес рисунки, количество инструментов и длины инструментов
+            {
+                addres = File.ReadAllLines(@"C:\Mach3\GCode\1_info.dat", Encoding.GetEncoding(1251));
+            }
+
             try
             {
-                line2D = File.ReadAllLines(info[0]);//построчное считывание из переменной типа стринг в массив типа стринг
+                line2D = File.ReadAllLines(addres[0]);//построчное считывание из переменной типа стринг в массив типа стринг
             }
             catch (ArgumentException ex)
             {
@@ -193,6 +209,9 @@ namespace Gorelovskiy.ru_3._0_Console
         //____________________________________________________________________________________
         //______________________________разбор двухмерного рисунка____________________________
         //____________________________________________________________________________________
+        /// <summary>
+        /// Метод поиска в массиве рисунка координата с последующей передачей на преобразование.
+        /// </summary>
         public void Dividing2DPictureAndRemaking()
         {
             //________________________________________________________________________________________________________
@@ -201,9 +220,24 @@ namespace Gorelovskiy.ru_3._0_Console
 
             Write3DCoordinate = new WritingNewCoordinateInFile();
             WorkWithMoves = new WorkWithRead2DCoordinates();
+            //длина шпиндиля
+            string[] DZRotorymass = File.ReadAllLines(@"C:\Mach3\GCode\DZRotory.txt");
             string patternG = @"[G]\d*";
-            string patternX = @"[Y]\W?\d*\W?\d*";
-            string patternY = @"[X]\d*\W?\d*";
+            string patternX = null;
+            string patternY = null;
+
+            if (customer == (int)customers.VerlinRostov ||
+                customer == (int)customers.DiakovRostov)//левая система координат
+            {
+                patternX = @"[X]\W?\d*\W?\d*";
+                patternY = @"[Y]\d*\W?\d*";
+            }
+            else//правая система координат
+            {
+                patternX = @"[Y]\W?\d*\W?\d*";
+                patternY = @"[X]\d*\W?\d*";
+            }
+
             string patternZ = @"[Z]\W?\d*\W?\d*";
             string patternF = @"[F]\d*";
             string patternM = @"[M]\d*";
@@ -214,36 +248,44 @@ namespace Gorelovskiy.ru_3._0_Console
             float Read2DX = 0;
             bool FlagIndicatorOfFirstMoves = false;
             int mmm = 0;//номер строки в массиве стринговских строк прочитанного файла, в котором записанны все координаты двухмерного рисунка
-
-            //открываем файл в котором находится инфа о инструментах
-            string[] info = File.ReadAllLines(@"C:\Mach3\GCode\1_info.dat", Encoding.GetEncoding(1251));
-            //длина шпиндиля
-            string[] DZRotorymass = File.ReadAllLines(@"C:\Mach3\GCode\DZRotory.txt");
             float DlinaShpindel = float.Parse(DZRotorymass[0].Replace('.', ','));
 
-            //если всего один элемен в массиве, тогда сразу задаем длину фрезы + шпиндель
-            if (int.Parse(info[1]) == 1)
+            if (customer == (int)customers.ArmenOtradnoe ||
+                customer == (int)customers.VerlinRostov ||
+                customer == (int)customers.DiakovRostov)
             {
-                DlinaSpindelPlusDlinaFrezi = float.Parse(DZRotorymass[0].Replace('.', ',')) +
-                                                  float.Parse(info[2].Replace('.', ','));   
+                string[] dzrmass = File.ReadAllLines(@"C:\Mach3\GCode\dzr.txt");
+                float DlinaFrezi = Convert.ToSingle(dzrmass[0]);
+                DlinaSpindelPlusDlinaFrezi = DlinaShpindel + DlinaFrezi;
             }
             else
             {
-                //задаем размер массива
-                allInstruments = new float[int.Parse(info[1])];
-                //заполняем массив содержащий длины фрез
-                for (int i = 0; i < allInstruments.Length; i++)
+                //открываем файл в котором находится инфа о инструментах
+                string[] info = File.ReadAllLines(@"C:\Mach3\GCode\1_info.dat", Encoding.GetEncoding(1251));
+
+                //если всего один элемен в массиве, тогда сразу задаем длину фрезы + шпиндель
+                if (int.Parse(info[1]) == 1)
                 {
-                    allInstruments[i] = float.Parse(DZRotorymass[0].Replace('.', ',')) +
-                                                         float.Parse(info[i + 2].Replace('.', ','));
+                    DlinaSpindelPlusDlinaFrezi = float.Parse(DZRotorymass[0].Replace('.', ',')) +
+                                                      float.Parse(info[2].Replace('.', ','));
+                }
+                else
+                {
+                    //задаем размер массива
+                    allInstruments = new float[int.Parse(info[1])];
+                    //заполняем массив содержащий длины фрез
+                    for (int i = 0; i < allInstruments.Length; i++)
+                    {
+                        allInstruments[i] = float.Parse(DZRotorymass[0].Replace('.', ',')) +
+                                                             float.Parse(info[i + 2].Replace('.', ','));
+                    }
                 }
             }
-
 
             //___________________________________________________________________________
             //___________________Запись информационных строк в файл______________________
             //___________________________________________________________________________
-            Write3DCoordinate.WriteInformationStrings(DlinaShpindel, yPriMinZ, MaxY, MaxZ, centrY, centrZ, HordaFasada);
+            Write3DCoordinate.WriteInformationStrings(DlinaShpindel, yPriMinZ, MaxY, MaxZ, centrY, centrZ);
             //________________________________________________________________________________________________________
             //______________________________________чтение из файла интересующих данных_______________________________
             //________________________________________________________________________________________________________
@@ -274,30 +316,39 @@ namespace Gorelovskiy.ru_3._0_Console
                 //________________________________________________________________________________________________________
                 foreach (Match M in Regex.Matches(line2D[mmm], patternM))
                 {
-                   
+
                     string M1 = Convert.ToString(M);
 
-                        //проверяем на конец работы инструмента
+                    //проверяем на конец работы инструмента
                     if (M1 == "M5" || M1 == "M05")
                     {
-                        //если mmm это последняя строка тогда заканчиваем считывание
-                        if (mmm + 1 != line2D.Length)
+                        if (customer == (int)customers.ArmenOtradnoe ||
+                            customer == (int)customers.VerlinRostov ||
+                            customer == (int)customers.DiakovRostov)
                         {
-                            //сследуем стледущющую строку на предмет нахождения М6
-                            Match M6 = Regex.Match(line2D[mmm + 1], patternM);
-                            //если не нашли, заканчиваем работу
-                            if (M6 == null || line2D[mmm + 1] == "M30")
-                                goto endRead;
-                            else
-                            {
-                                M1 = M1.Substring(1);
-                                float M2 = Convert.ToSingle(M1);
-                                Write3DCoordinate.WriteM(M2);
-                            }
+                            goto endRead;
                         }
                         else
                         {
-                            goto endRead;
+                            //если mmm это последняя строка тогда заканчиваем считывание
+                            if (mmm + 1 != line2D.Length)
+                            {
+                                //сследуем стледущющую строку на предмет нахождения М6
+                                Match M6 = Regex.Match(line2D[mmm + 1], patternM);
+                                //если не нашли, заканчиваем работу
+                                if (M6 == null || line2D[mmm + 1] == "M30")
+                                    goto endRead;
+                                else
+                                {
+                                    M1 = M1.Substring(1);
+                                    float M2 = Convert.ToSingle(M1);
+                                    Write3DCoordinate.WriteM(M2);
+                                }
+                            }
+                            else
+                            {
+                                goto endRead;
+                            }
                         }
                     }
                     else
@@ -310,17 +361,22 @@ namespace Gorelovskiy.ru_3._0_Console
                 //________________________________________________________________________________________________________
                 //________________________________________Находим в тексте значение T_____________________________________
                 //________________________________________________________________________________________________________
-                foreach (Match T in Regex.Matches(line2D[mmm], patternT))
+                if (customer != (int)customers.ArmenOtradnoe &&
+                    customer != (int)customers.VerlinRostov &&
+                    customer != (int)customers.DiakovRostov)
                 {
-                    string T1 = Convert.ToString(T);
-                    T1 = T1.Substring(1);
-                    float T2 = Convert.ToSingle(T1);
+                    foreach (Match T in Regex.Matches(line2D[mmm], patternT))
+                    {
+                        string T1 = Convert.ToString(T);
+                        T1 = T1.Substring(1);
+                        float T2 = Convert.ToSingle(T1);
 
-                    DlinaSpindelPlusDlinaFrezi = allInstruments[(int)T2 - 1];
+                        DlinaSpindelPlusDlinaFrezi = allInstruments[(int)T2 - 1];
 
-                    FlagIndicatorOfFirstMoves = false;
+                        FlagIndicatorOfFirstMoves = false;
 
-                    Write3DCoordinate.WriteT(T2);
+                        Write3DCoordinate.WriteT(T2);
+                    }
                 }
                 //________________________________________________________________________________________________________
                 //________________________________________Находим в тексте значение S_____________________________________
@@ -398,9 +454,5 @@ namespace Gorelovskiy.ru_3._0_Console
             //окончание цикла, файл полностью разобран!!!!!!!!!!!!
             Write3DCoordinate.CloseStream();
         }
-
-        //____________________________________________________________________________________
-        //____________________________задаем глобальные переменные____________________________
-        //____________________________________________________________________________________
     }
 }
