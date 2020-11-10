@@ -33,6 +33,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Gorelovskiy.ru_3._0_Console.MainProgram</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -43,23 +46,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AddictionalFunctionsClass\AddictionalForWorkWithCoordinates.cs" />
-    <Compile Include="AddictionalFunctionsClass\AdditionalFunctionsForReadAndDividingFunction.cs" />
-    <Compile Include="BasicFunction%282%29.cs" />
-    <Compile Include="CoordinatesWork\MoveToXAndHigh.cs" />
-    <Compile Include="CoordinatesWork\MoveToXAndY.cs" />
-    <Compile Include="CoordinatesWork\MoveToXAndYAndHigh.cs" />
-    <Compile Include="AddictionalFunctionsClass\Exceptions.cs" />
-    <Compile Include="CoordinatesWork\FirstMovesToTheCoordinates.cs" />
-    <Compile Include="MainProgram%281%29.cs" />
-    <Compile Include="CoordinatesWork\MoveOnlyToX.cs" />
-    <Compile Include="CoordinatesWork\MoveOnlyToY.cs" />
-    <Compile Include="CoordinatesWork\MoveOnlyToHigh.cs" />
-    <Compile Include="CoordinatesWork\MoveToYAndHigh.cs" />
+    <Compile Include="AddictFuncs\Spline.cs" />
+    <Compile Include="BasicFunction.cs" />
+    <Compile Include="MainProgram.cs" />
+    <Compile Include="Model\GeneralInfoModel.cs" />
+    <Compile Include="Model\FasadModel.cs" />
+    <Compile Include="Services.cs" />
+    <Compile Include="Model\PointModel.cs" />
+    <Compile Include="Model\ScanModel.cs" />
+    <Compile Include="Model\VectorModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WorkWithRead2DCoordinates%283%29.cs" />
-    <Compile Include="WritingNewCoordinateInFile.cs" />
+    <Compile Include="TransformCoordinates.cs" />
+    <Compile Include="CustomException.cs" />
+    <Compile Include="WriteFile.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
