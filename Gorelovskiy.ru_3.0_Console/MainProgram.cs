@@ -9,25 +9,23 @@ namespace Gorelovskiy.ru_3._0_Console
     {
         static void Main(string[] args)
         {
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("Начато выполнения программы");
+            Services.Log("Начато выполнения программы");
             try
             {
-                BasicFunction o_BasicFunction = new BasicFunction();
-                Console.WriteLine("Выполнение программы успешно завершено");
+                BasicFunction basicFunction = new BasicFunction();
+                basicFunction.Start();
+                Services.Log("Выполнение программы успешно завершено", Services.LogType.SUCCESS);
             }
             catch(CustomException ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex.GetMessage());
-                Console.WriteLine("Выполнение программы завершено с ошибкой");
+                Services.Log("Выполнение программы завершено с ошибкой", Services.LogType.ERROR);
+                Services.Log(ex.GetMessage(), Services.LogType.ERROR);
                 Console.ReadKey();
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex.Message);
-                Console.WriteLine("Выполнение программы завершено с ошибкой");
+                Services.Log("Выполнение программы завершено с ошибкой", Services.LogType.ERROR);
+                Services.Log(ex.Message, Services.LogType.ERROR);
                 Console.ReadKey();
             }
         }

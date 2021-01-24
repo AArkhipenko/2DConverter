@@ -11,18 +11,20 @@ namespace Gorelovskiy.ru_3._0_Console
     {
         public BasicFunction()
         {
-            Console.WriteLine("\tНачато создание модели фасада на основе скана");
+        }
+
+        /// <summary>
+        /// Публичный метод выполнения полного цикла обработки рисунка
+        /// </summary>
+        public void Start()
+        {
+            Services.Log("\tНачато создание модели фасада на основе скана");
             this.CreateFasadModel();
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\tСоздание модели фасада на основе скана успешно завершено");
-            Console.ForegroundColor = ConsoleColor.White;
+            Services.Log("\tСоздание модели фасада на основе скана успешно завершено", Services.LogType.SUCCESS);
 
-
-            Console.WriteLine("\tНачато наложение 2D рисунка на трехмерную модель фасада");
+            Services.Log("\tНачато наложение 2D рисунка на трехмерную модель фасада");
             this.TransformPicture();
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\tНаложение 2D рисунка на трехмерную модель фасада успешно завершено");
-            Console.ForegroundColor = ConsoleColor.White;
+            Services.Log("\tНаложение 2D рисунка на трехмерную модель фасада успешно завершено", Services.LogType.SUCCESS);
         }
 
 
@@ -32,7 +34,7 @@ namespace Gorelovskiy.ru_3._0_Console
         /// </summary>
         private void CreateFasadModel()
         {
-            Console.WriteLine("\t\tНачато чтения файла скана и создание модели скана");
+            Services.Log("\t\tНачато чтения файла скана и создание модели скана");
             #region чтение файла со сканами
             Model.ScanModel scan_model = null;
             if (!File.Exists(Services._scan_file_path))
@@ -46,12 +48,19 @@ namespace Gorelovskiy.ru_3._0_Console
                     while (reader.Peek() > 0)
                     {
                         var line = reader.ReadLine();
-                        if (counter == 0) // количество сканов
+                        // количество сканов
+                        if (counter == 0)
                             scan_model = new Model.ScanModel(int.Parse(line));
-                        else if (counter == 1) //начало сканирования по игрек
-                            scan_model._model.ForEach(a => a._y = double.Parse(line.Replace('.', ',')));
-                        else if (counter == 2) //шаг сканов
+                        //начало сканирования по игрек
+                        else if (counter == 1)
                         {
+                            double startY = double.Parse(line.Replace('.', ','));
+                            scan_model._model.ForEach(a => a._y = startY);
+                        }
+                        //шаг сканов
+                        else if (counter == 2)
+                        {
+                            //в моделе сканирования задаем координату по игрек каждого скана
                             int p = 0;
                             double delta_y = double.Parse(line.Replace('.', ','));
                             scan_model._model.ForEach(a =>
@@ -62,6 +71,7 @@ namespace Gorelovskiy.ru_3._0_Console
                         }
                         else // координаты
                         {
+                            //строка с коориданатами имеет формат ({х}\t{z1}\t{z2}\t...)
                             string[] coordinates = line.Split('\t');
                             int p = 0;
                             scan_model._model.ForEach(a =>
@@ -86,12 +96,10 @@ namespace Gorelovskiy.ru_3._0_Console
                 }
             }
             #endregion
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\t\tЧтения файла скана и создание модели скана успешно завершено");
-            Console.ForegroundColor = ConsoleColor.White;
+            Services.Log("\t\tЧтения файла скана и создание модели скана успешно завершено", Services.LogType.SUCCESS);
 
 
-            Console.WriteLine("\t\tНачато создание модели фасада на основе модели скана");
+            Services.Log("\t\tНачато создание модели фасада на основе модели скана");
             #region Создание модели фасада с более детальной прорисовкой, углами и длинами дуг
             //создать новую модель фасада и заполнить ее данными
             Services._fasad_model = new Model.FasadModel();
@@ -142,7 +150,7 @@ namespace Gorelovskiy.ru_3._0_Console
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (ex.InnerException == null)
                     throw new CustomException(ex.Message);
@@ -150,10 +158,9 @@ namespace Gorelovskiy.ru_3._0_Console
                     throw new CustomException(ex.Message, ex.InnerException);
             }
             #endregion
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\t\tСоздание модели фасада на основе модели скана успешно завершено");
-            Console.ForegroundColor = ConsoleColor.White;
-#if DEBUG
+            Services.Log("\t\tСоздание модели фасада на основе модели скана успешно завершено", Services.LogType.SUCCESS);
+
+#if RESEARCH
             this.WriteCoordinatesInFile(scan_model);
             this.WriteCoordinatesInFile(Services._fasad_model);
 #endif
@@ -166,47 +173,47 @@ namespace Gorelovskiy.ru_3._0_Console
         /// </summary>
         private void TransformPicture()
         {
-            Console.WriteLine("\t\tНачато создание шаблонов поиска информации");
+            Services.Log("\t\tНачато создание шаблонов поиска информации");
             #region Шаблоны поиска значений в тексте
             //\W? - любой не алфавитно-цифровой символ повторяется 0 или 1 раз
             //\d+ - любой цифровой символ повторяется 1 и более раз
             //\d* - любой цифровой символ повторяется 0 и более раз
 
-            string patternG = @"[G]\d*";
+            string patternG = @"G\d+";
             string patternX = null;
             string patternY = null;
             if (Services._is_right_screw)//правовинтовая система координат
             {
-                patternX = @"[X]\W?\d+\W?\d*";
-                patternY = @"[Y]\W?\d+\W?\d*";
+                patternX = @"X\-?\d+([\,\.]\d+)?";
+                patternY = @"Y\-?\d+([\,\.]\d+)?";
             }
             else//левовинтоая система координат
             {
-                patternX = @"[Y]\W?\d+\W?\d*";
-                patternY = @"[X]\W?\d+\W?\d*";
+                patternX = @"Y\-?\d+([\,\.]\d+)?";
+                patternY = @"X\-?\d+([\,\.]\d+)?";
             }
 
-            string patternZ = @"[Z]\W?\d+\W?\d*";
-            string patternF = @"[F]\d+";
-            string patternM = @"[M]\d+";
-            string patternS = @"[S]\d+";
-            string patternT = @"[T]\d+";
+            string patternZ = @"Z\-?\d+([\,\.]\d+)?";
+            string patternF = @"F\d+";
+            string patternM = @"M\d+";
+            string patternS = @"S\d+";
+            string patternT = @"T\d+";
             #endregion
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\t\tСоздание шаблонов поиска информации успешно завершено");
-            Console.ForegroundColor = ConsoleColor.White;
+            Services.Log("\t\tСоздание шаблонов поиска информации успешно завершено", Services.LogType.SUCCESS);
 
 
-            Console.WriteLine("\t\tНачато получение основной информации о станке и моделе фасада");
+            Services.Log("\t\tНачато получение основной информации о станке и моделе фасада");
             #region Параметры станка
             //открываем файл в котором находится инфа о инструментах
             if (!File.Exists(Services._2D_picture_ref_path))
                 throw new CustomException("Отсутствует файл с информацией о пути к файлу рисунка");
+
             string[] info = File.ReadAllLines(Services._2D_picture_ref_path, Encoding.GetEncoding(1251));
+
             if (!File.Exists(info[0]))
-                throw new Exception("Отсутствует файл 2D рисунка");
+                throw new CustomException("Отсутствует файл 2D рисунка");
             if (!File.Exists(Services._spindel_file_path))
-                throw new Exception("Отсутствует файл c длиной шпинделя");
+                throw new CustomException("Отсутствует файл c длиной шпинделя");
 
             double spindel_length = double.Parse(File.ReadAllText(Services._spindel_file_path).Replace('.', ','));
             Services._full_instrument_length = spindel_length;
@@ -234,159 +241,180 @@ namespace Gorelovskiy.ru_3._0_Console
             try
             {
                 var start_scan_point = new Model.GeneralInfoModel.Point(Services._fasad_model._model[0]._xz.Where(a => a._length == 0).First()._x,
-                                                                                                    Services._fasad_model._model[0]._y,
-                                                                                                    Services._fasad_model._model[0]._xz.Where(a => a._length == 0).First()._x);
+                                                                        Services._fasad_model._model[0]._y,
+                                                                        Services._fasad_model._model[0]._xz.Where(a => a._length == 0).First()._z);
 
                 var max_point = Services._fasad_model._model.Select(a => new
-                {
-                    x = a._xz.OrderBy(b => b._z).First()._x,
-                    y = a._y,
-                    z = a._xz.OrderBy(b => b._z).First()._z,
-                }).OrderBy(a => a.z).First();
-
-                var min_point = Services._fasad_model._model.Select(a => new
                 {
                     x = a._xz.OrderByDescending(b => b._z).First()._x,
                     y = a._y,
                     z = a._xz.OrderByDescending(b => b._z).First()._z,
                 }).OrderBy(a => a.z).First();
 
+                var min_point = Services._fasad_model._model.Select(a => new
+                {
+                    x = a._xz.OrderBy(b => b._z).First()._x,
+                    y = a._y,
+                    z = a._xz.OrderBy(b => b._z).First()._z,
+                }).OrderBy(a => a.z).First();
+
                 general_info = new Model.GeneralInfoModel(spindel_length,
-                                                                                new Model.GeneralInfoModel.Point(max_point.x, max_point.y, max_point.z),
-                                                                                new Model.GeneralInfoModel.Point(min_point.x, min_point.y, min_point.z),
-                                                                                start_scan_point);
+                                                            new Model.GeneralInfoModel.Point(max_point.x, max_point.y, max_point.z),
+                                                            new Model.GeneralInfoModel.Point(min_point.x, min_point.y, min_point.z),
+                                                            start_scan_point);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                throw new CustomException("Не удалось получить основную информацию");
+                throw new CustomException("Не удалось получить основную информацию", ex);
             }
             #endregion
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\t\tПолучение основной информации о станке и моделе фасада успешно завершено");
-            Console.ForegroundColor = ConsoleColor.White;
+            Services.Log("\t\tПолучение основной информации о станке и моделе фасада успешно завершено", Services.LogType.SUCCESS);
 
 
-            Console.WriteLine("\t\tНачато чтение файла с рисунком и наложение его на трехмерный фасад");
+            Services.Log("\t\tНачато чтение файла с рисунком и наложение его на трехмерный фасад");
             #region Работа с файлом (чтение двухмерного и запись в трехмерный)
-            Services._writer = new WriteFile();
-            TransformCoordinates transformator = new TransformCoordinates();
-            //@@@Записать общую информацию в файл
-
-            //@@@Читаем файл и делаем преобразование
-            bool is_first = true;
-            using (StreamReader reader = new StreamReader(info[0]))
+            using (Services._writer = new WriteFile())
             {
-                int counter = 0;
-                try
+
+                TransformCoordinates transformator = new TransformCoordinates();
+                //Читаем файл и делаем преобразование
+                bool is_first = true;
+                using (StreamReader reader = new StreamReader(info[0]))
                 {
-                    Services._writer.Write(WriteFile.MatchValue.INFO, general_info);
-                    while (reader.Peek() > 0)
+                    int counter = 0;
+                    try
                     {
-                        string line_2d_file = reader.ReadLine();
-                        int is_read_2d_x = 1;
-                        int is_read_2d_y = 3;
-                        int is_read_2d_z = 5;
+                        Match match = null;
+                        //запис основной информации в файл
+                        Services._writer.Write(WriteFile.MatchValue.INFO, general_info);
+                        while (reader.Peek() > 0)
+                        {
+                            string line_2d_file = reader.ReadLine();
+                            int is_read_2d_x = 1;
+                            int is_read_2d_y = 3;
+                            int is_read_2d_z = 5;
 
-                        double? x_2d = null;
-                        double? y_2d = null;
-                        double? z_2d = null;
+                            double? x_2d = null;
+                            double? y_2d = null;
+                            double? z_2d = null;
 
-                        foreach(Match match in Regex.Matches(line_2d_file, patternG))
-                        {
-                            int G = int.Parse(match.ToString().Substring(1));
-                            if (G != 2 && G != 3)
-                                Services._writer.Write(WriteFile.MatchValue.G, G);
+                            //находим G
+                            match = Regex.Match(line_2d_file, patternG);
+                            if (match.Success)
+                            {
+                                int G = int.Parse(match.Value.Substring(1));
+                                if (G != 2 && G != 3)
+                                    Services._writer.Write(WriteFile.MatchValue.G, G);
+                            }
 
-                        }
-                        foreach (Match match in Regex.Matches(line_2d_file, patternM))
-                        {
-                            int M = int.Parse(match.ToString().Substring(1));
-                            if (M == 5)
-                                break;
-                            else
-                                Services._writer.Write(WriteFile.MatchValue.M, M);
+                            //находим M
+                            match = Regex.Match(line_2d_file, patternM);
+                            if (match.Success)
+                            {
+                                int M = int.Parse(match.Value.Substring(1));
+                                if (M == 5)
+                                    break;
+                                else
+                                    Services._writer.Write(WriteFile.MatchValue.M, M);
 
-                        }
-                        foreach (Match match in Regex.Matches(line_2d_file, patternT))
-                        {
-                            int T = int.Parse(match.ToString().Substring(1));
+                            }
 
-                            //@@@изменяем длину фрезы
-                            Services._writer.Write(WriteFile.MatchValue.T, T);
-                        }
-                        foreach (Match match in Regex.Matches(line_2d_file, patternT))
-                        {
-                            int S = int.Parse(match.ToString().Substring(1));
+                            //находим T
+                            match = Regex.Match(line_2d_file, patternT);
+                            if (match.Success)
+                            {
+                                int T = int.Parse(match.Value.Substring(1));
 
-                            Services._writer.Write(WriteFile.MatchValue.S, S);
-                        }
-                        foreach (Match match in Regex.Matches(line_2d_file, patternF))
-                        {
-                            int F = int.Parse(match.ToString().Substring(1));
+                                Services._writer.Write(WriteFile.MatchValue.T, T);
+                                Services._full_instrument_length = cutter_lengths[T - 1];
+                            }
 
-                            Services._writer.Write(WriteFile.MatchValue.F, F);
-                        }
-                        if (Regex.IsMatch(line_2d_file, patternY))
-                        {
-                            is_read_2d_y = 11;
-                            y_2d = double.Parse(Regex.Match(line_2d_file, patternY).ToString().Substring(1).Replace(".", ","));
-                        }
-                        if (Regex.IsMatch(line_2d_file, patternZ))
-                        {
-                            is_read_2d_z = 13;
-                            z_2d = double.Parse(Regex.Match(line_2d_file, patternZ).ToString().Substring(1).Replace(".", ","));
-                        }
-                        if (Regex.IsMatch(line_2d_file, patternX))
-                        {
-                            is_read_2d_x = 7;
-                            x_2d = double.Parse(Regex.Match(line_2d_file, patternX).ToString().Substring(1).Replace(".", ","));
-                        }
+                            //находим S
+                            match = Regex.Match(line_2d_file, patternS);
+                            if (match.Success)
+                            {
+                                int S = int.Parse(match.Value.Substring(1));
 
-                        int multiplication = is_read_2d_y * is_read_2d_z * is_read_2d_x;
-                        if (multiplication == (int)TransformCoordinates.Option.X_Y_Z &&
-                            is_first)
-                        {
-                            transformator.TransformData(TransformCoordinates.Option.FIRST, x_2d, y_2d, z_2d);
-                            is_first = false;
-                        }
-                        else if(!is_first)
+                                Services._writer.Write(WriteFile.MatchValue.S, S);
+                            }
+
+                            //находим F
+                            match = Regex.Match(line_2d_file, patternF);
+                            if (match.Success)
+                            {
+                                int F = int.Parse(match.Value.Substring(1));
+
+                                Services._writer.Write(WriteFile.MatchValue.F, F);
+                            }
+
+
+                            //находим Y
+                            match = Regex.Match(line_2d_file, patternY);
+                            if (match.Success)
+                            {
+                                is_read_2d_y = 11;
+                                y_2d = double.Parse(match.Value.Substring(1).Replace(".", ","));
+                            }
+
+                            //находим Z
+                            match = Regex.Match(line_2d_file, patternZ);
+                            if (match.Success)
+                            {
+                                is_read_2d_z = 13;
+                                z_2d = double.Parse(match.Value.Substring(1).Replace(".", ","));
+                            }
+
+                            //находим X
+                            match = Regex.Match(line_2d_file, patternX);
+                            if (match.Success)
+                            {
+                                is_read_2d_x = 7;
+                                x_2d = double.Parse(match.Value.Substring(1).Replace(".", ","));
+                            }
+
+                            if ((is_read_2d_x == 7 ||
+                                is_read_2d_y == 11 ||
+                                is_read_2d_z == 13) && is_first)
+                            {
+                                transformator.TransformData(TransformCoordinates.Option.FIRST, 0, 0, 100);
+                                is_first = false;
+                            }
+
+                            int multiplication = is_read_2d_y * is_read_2d_z * is_read_2d_x;
                             transformator.TransformData((TransformCoordinates.Option)(is_read_2d_y * is_read_2d_z * is_read_2d_x), x_2d, y_2d, z_2d);
 
-                        Services._writer.Write(WriteFile.MatchValue.END);
-                        counter++;
+                            Services._writer.Write(WriteFile.MatchValue.END);
+                            counter++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Services._writer.Dispose();
+                        if (ex.InnerException == null)
+                            throw new CustomException(ex.Message, counter);
+                        else
+                            throw new CustomException(ex.Message, ex.InnerException, counter);
                     }
                 }
-                catch(Exception ex)
-                {
-                    Services._writer.Dispose();
-                    if (ex.InnerException == null)
-                        throw new CustomException(ex.Message, counter);
-                    else
-                        throw new CustomException(ex.Message, ex.InnerException, counter);
-                }
             }
-            Services._writer.Dispose();
 
-            //@@@Закончить преобразование
             #endregion
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\t\tЧтение файла с рисунком и наложение его на трехмерный фасад успешно завершено");
-            Console.ForegroundColor = ConsoleColor.White;
+            Services.Log("\t\tЧтение файла с рисунком и наложение его на трехмерный фасад успешно завершено", Services.LogType.SUCCESS);
         }
 
 
 
 
-#if DEBUG
+#if RESEARCH
         /// <summary>
         /// Запись моделей в файл
         /// </summary>
         /// <param name="model">модель для записи в файл</param>
         private void WriteCoordinatesInFile(object model)
         {
-            if (model.GetType() == typeof(Model.ScanModel))
+            if (model is Model.ScanModel)
             {
-                using (var sw = new StreamWriter("c:\\temp\\scan.txt"))
+                using (var sw = new StreamWriter(@".\scan.txt"))
                 {
                     var obj = (Model.ScanModel)model;
                     foreach (var el in obj._model)
@@ -397,9 +425,9 @@ namespace Gorelovskiy.ru_3._0_Console
                     }
                 }
             }
-            if (model.GetType() == typeof(Model.FasadModel))
+            else if (model is Model.FasadModel)
             {
-                using (var sw = new StreamWriter("c:\\temp\\fasad.txt"))
+                using (var sw = new StreamWriter(@".\fasad.txt"))
                 {
                     var obj = (Model.FasadModel)model;
                     foreach (var el in obj._model)

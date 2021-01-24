@@ -12,14 +12,14 @@ namespace Gorelovskiy.ru_3._0_Console
         private Option _current_option;
         public enum Option : int
         {
-            NONE = 15,
-            ONLY_X = 105,
-            ONLY_Y = 55,
-            ONLY_Z = 39,
-            X_Y = 385,
-            X_Z = 273,
-            Y_Z = 143,
-            X_Y_Z = 1001,
+            NONE = 1 * 3 * 5,
+            ONLY_X = 7 * 3 * 5,
+            ONLY_Y = 1 * 11 * 5,
+            ONLY_Z = 1 * 3 * 13,
+            X_Y = 7 * 11 * 5,
+            X_Z = 7 * 3 * 13,
+            Y_Z = 1 * 11 * 13,
+            X_Y_Z = 7 * 11 * 13,
             FIRST = 666
         }
         public TransformCoordinates()
@@ -233,12 +233,13 @@ namespace Gorelovskiy.ru_3._0_Console
         /// (перевод угла склонения в градусы, изменение системы координат, вычитание длины шпинделя...)
         /// </summary>
         /// <param name="point_3d">точка расчитанная для фасада без учета длины шпинделя</param>
+        /// <param name="option">режим записи координат</param>
         private void FinalChange(Model.PointModel point_3d, WriteFile.MatchValue option)
         {
             double a = (Services._is_clock_angle ? (-1) : 1) * point_3d._a;
 
             double x = point_3d._x - (Services._is_clock_angle ? (-1) : 1) * Math.Sin(a) * Services._full_instrument_length;
-            double y = point_3d._y ;
+            double y = point_3d._y;
             double z = point_3d._z + Math.Cos(a) * Services._full_instrument_length;
 
             Model.PointModel final_point = Services._is_right_screw ? new Model.PointModel(x, y, z, a) : new Model.PointModel(y, x, z, a);
