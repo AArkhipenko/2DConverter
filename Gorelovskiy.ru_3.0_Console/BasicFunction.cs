@@ -107,7 +107,8 @@ namespace Gorelovskiy.ru_3._0_Console
             try
             {
                 double min_x = scan_model._model.Min(a => a._xz.Min(b => b._x));
-                double max_x = scan_model._model.Max(a => a._xz.Max(b => b._x)) + 100;
+                double max_x = scan_model._model.Max(a => a._xz.Max(b => b._x));
+                double delta_x = max_x - min_x;
                 foreach (var obj in scan_model._model)
                 {
                     Services._fasad_model._model.Add(new Model.FasadModel.Duga()
@@ -117,7 +118,7 @@ namespace Gorelovskiy.ru_3._0_Console
                     spline.BuildSpline(obj._xz.Select(a => a._x).ToArray(), obj._xz.Select(a => a._z).ToArray());
                     double new_x = min_x;
                     double length = 0;
-                    while (new_x < max_x)
+                    while (new_x < max_x + delta_x * 0.1)
                     {
                         var new_z = spline.GetY(new_x);
                         var new_a = spline.GetA(new_x);
@@ -133,7 +134,7 @@ namespace Gorelovskiy.ru_3._0_Console
                         new_x += 0.01;
                     }
                     new_x = min_x;
-                    while (new_x > min_x - 100)
+                    while (new_x > min_x - delta_x * 0.1)
                     {
                         new_x -= 0.01;
                         var new_z = spline.GetY(new_x);

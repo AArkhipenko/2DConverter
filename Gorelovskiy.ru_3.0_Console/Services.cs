@@ -54,23 +54,23 @@ namespace Gorelovskiy.ru_3._0_Console
         /// <summary>
         /// путь к файлу скана
         /// </summary>
-        public const string _scan_file_path = @".\1Scan.txt";
+        public const string _scan_file_path = @"C:\Gorelovskiy\1Scan.txt";
         /// <summary>
         /// путь к файлу, в котором храниться ссылка на рисунок и возможно еще список фрез
         /// </summary>
-        public const string _2D_picture_ref_path = _is_auto_change ? @".\1_info.dat" : @".\addresGCode.txt";
+        public const string _2D_picture_ref_path = _is_auto_change ? @"C:\Gorelovskiy\1_info.dat" : @"C:\Gorelovskiy\addresGCode.txt";
         /// <summary>
         /// путь к файл, в котором храниться расстояние от точки поворота до конца шпинделя
         /// </summary>
-        public const string _spindel_file_path = @".\DZRotory.txt";
+        public const string _spindel_file_path = @"C:\Gorelovskiy\DZRotory.txt";
         /// <summary>
         /// путь к файлу к файлу, в котором храниться длина фрезы
         /// </summary>
-        public const string _cutter_file_path = @".\dzr.txt";
+        public const string _cutter_file_path = @"C:\Gorelovskiy\dzr.txt";
         /// <summary>
         /// путь к файлу в который записывается трехмерный рисунок
         /// </summary>
-        public const string _3d_file_path = @".\3DGcode.tap";
+        public const string _3d_file_path = @"C:\Gorelovskiy\3DGcode.tap";
         #endregion
 
 
