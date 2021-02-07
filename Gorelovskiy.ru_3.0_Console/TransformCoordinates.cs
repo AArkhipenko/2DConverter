@@ -240,7 +240,7 @@ namespace Gorelovskiy.ru_3._0_Console
 
             double x = point_3d._x - (Services._is_clock_angle ? (-1) : 1) * Math.Sin(a) * Services._full_instrument_length;
             double y = point_3d._y;
-            double z = point_3d._z + Math.Cos(a) * Services._full_instrument_length;
+            double z = point_3d._z + (Math.Cos(a) - 1) * Services._full_instrument_length;
 
             Model.PointModel final_point = Services._is_right_screw ? new Model.PointModel(x, y, z, a) : new Model.PointModel(y, x, z, a);
             Services._writer.Write(option, final_point);

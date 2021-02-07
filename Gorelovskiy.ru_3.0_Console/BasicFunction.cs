@@ -86,6 +86,15 @@ namespace Gorelovskiy.ru_3._0_Console
                         }
                         counter++;
                     }
+
+                    double delta_x = scan_model._model.First()._xz.First()._x;
+                    scan_model._model.ForEach(a =>
+                    {
+                        a._xz.ForEach(b =>
+                        {
+                            b._x -= delta_x;
+                        });
+                    });
                 }
                 catch (Exception ex)
                 {
