@@ -318,12 +318,11 @@ namespace Gorelovskiy.ru_3._0_Console
                             }
 
                             //находим M
-                            match = Regex.Match(line_2d_file, patternM);
-                            if (match.Success)
+                            foreach(Match mMatch in Regex.Matches(line_2d_file, patternM))
                             {
-                                int M = int.Parse(match.Value.Substring(1));
-                                if (M == 5)
-                                    break;
+                                int M = int.Parse(mMatch.Value.Substring(1));
+                                if (M == 30)
+                                    goto exit;
                                 else
                                     Services._writer.Write(WriteFile.MatchValue.M, M);
 
@@ -396,6 +395,7 @@ namespace Gorelovskiy.ru_3._0_Console
                             Services._writer.Write(WriteFile.MatchValue.END);
                             counter++;
                         }
+                    exit:;
                     }
                     catch (Exception ex)
                     {

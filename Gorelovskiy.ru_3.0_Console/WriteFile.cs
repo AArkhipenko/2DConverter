@@ -6,7 +6,7 @@ namespace Gorelovskiy.ru_3._0_Console
 {
     class WriteFile : IDisposable
     {
-        private StreamWriter _writer;
+        private StreamWriter _writer = null;
         public WriteFile()
         {
             if (File.Exists(Services._3d_file_path))
@@ -15,9 +15,13 @@ namespace Gorelovskiy.ru_3._0_Console
         }
         public void Dispose()
         {
-            this._writer.WriteLine("M05" + "\r\n" + "G53 G0 Z0" + "\r\n" + "G0 A0" + "\r\n" + "M30");
-            this._writer.Close();
-            this._writer.Dispose();
+            if (_writer != null)
+            {
+                this._writer.WriteLine("M05" + "\r\n" + "G53 G0 Z0" + "\r\n" + "G0 A0" + "\r\n" + "M30");
+                this._writer.Close();
+                this._writer.Dispose();
+                this._writer = null;
+            }
         }
 
         public enum MatchValue
